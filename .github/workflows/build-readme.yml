@@ -1,0 +1,36 @@
+name: Build README
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+  schedule:
+    - cron: "15 6 * * *"
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Sync latest Medium articles into README.md
+        run: python scripts/build_readme.py
+
+      - name: Commit updated README if changed
+        run: |
+          git config user.name "Hassen Ben Chaaben"
+          git config user.email "hassen.benchaaben01@gmail.com"
+          if ! git diff --quiet README.md; then
+            git add README.md
+            git commit -m "chore(readme): sync latest Medium articles"
+            git push
+          fi
