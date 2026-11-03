@@ -71,7 +71,7 @@ def update_readme_section(readme_text: str, posts: list[dict[str, str]]) -> str:
     )
     table_md = render_posts_table(posts)
     replacement = f"{START_MARKER}\n{table_md}\n{END_MARKER}"
-    return pattern.sub(replacement, readme_text, count=1)
+    return pattern.sub(lambda _: replacement, readme_text, count=1)
 
 
 def fetch_medium_rss(url: str = MEDIUM_FEED_URL) -> bytes:

@@ -1,14 +1,17 @@
 from pathlib import Path
+import sys
 import xml.etree.ElementTree as ET
 import pytest
+
+ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
 
 from scripts.build_readme import (
     parse_medium_rss,
     render_posts_table,
     update_readme_section,
 )
-
-ROOT = Path(__file__).resolve().parents[1]
 
 SAMPLE_RSS = b"""<?xml version="1.0" encoding="UTF-8"?>
 <rss version="2.0">
