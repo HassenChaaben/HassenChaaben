@@ -1,28 +1,25 @@
-# HassenChaaben GitHub Profile Homepage — Superdesign Specification (v3 · Cosmic Solar Nebula & Portfolio Edition)
+# HassenChaaben GitHub Profile Homepage — Superdesign Specification (v4 · Cosmic Solar Nebula & Portfolio Edition)
 
 **Date:** 2026-11-03  
 **Repository Target:** `https://github.com/HassenChaaben/HassenChaaben`  
 **Superdesign Project Canvas:** `https://superdesign.dev/teams/7c4447c6-9b9f-495a-9728-4c295528c4bc/projects/863f8d9d-8335-490b-a4e3-2db2ac47837d`  
-**Superdesign Live Draft Preview (`v3`):** `https://p.superdesign.dev/draft/778cb96e-398b-47e2-aff7-d4c4dd4168c9`
+**Superdesign Live Draft Preview (`v4`):** `https://p.superdesign.dev/draft/778cb96e-398b-47e2-aff7-d4c4dd4168c9`
 
 ---
 
-## 1. Visual Identity & Design DNA (`v3`)
-This specification unites:
-1. **Your Personal Portfolio (`hassenbenchaaben.me`) Design System**:
-   - Deep-space obsidian canvas (`#000319`) and glassmorphic bento cards (`#04071D` with `1px solid rgba(255,255,255,0.12)` borders and subtle `36px` architectural grid).
-   - Signature headlines: `"WELCOME TO MY OWN WORLD — WHERE CREATIVITY MEETS INNOVATION"` and `"BUILDING NEXT-GEN AUTONOMOUS SYSTEMS"`.
-   - Spinning conic-gradient border accents (`#E2CBFF` → `#393BB2` → `#38BDF8`) and `#CBACF9` text glow.
-2. **Cinematic Solar System, Earth Limb, Cratered Moon & Nebula Palette**:
-   - **High-Resolution Custom Hero Panorama** ([cosmic-solar-nebula-hero.jpg](file:///C:/Users/user/.gemini/antigravity/scratch/HassenChaaben/assets/cosmic-solar-nebula-hero.jpg)): Photorealistic golden solar corona flare (`#F59E0B`), glowing blue Earth horizon and cratered silver Moon, diagonal planetary alignment (Mars, Jupiter, ringed Saturn, Uranus, Neptune), electric cyan (`#38BDF8`) and ultraviolet-lavender (`#CBACF9`) nebula clouds, and a futuristic autonomous AI orbital craft.
-   - **Custom Luxury Brand Emblem** ([hbc-orbital-logo.jpg](file:///C:/Users/user/.gemini/antigravity/scratch/HassenChaaben/assets/hbc-orbital-logo.jpg)): Geometric crescent moon and ringed planet intertwined with a golden/cyan neural constellation network on `#000319`.
-   - **Animated SVG Celestial HUD Overlay**: Shooting meteors (`@keyframes meteorShoot`), flowing orbital trajectory arcs (`@keyframes orbitFlow`), and twinkling constellation nodes (`@keyframes twinkleStar`) — with **zero text overlap** and **zero cheap emoji substitutes**.
-3. **Hamel Husain × Simon Willison × Sebastian Raschka Editorial Authority**:
-   - **3-Phase Cosmic Bento Grid (`What I'm Working On`)**:
-     - `PHASE 01 · AGENTIC AI` (`#CBACF9` Lavender) — Autonomous Agents & Copilots (`MonAgent`, `Microsoft Office Antigravity Copilot`)
-     - `PHASE 02 · DEEP LEARNING` (`#38BDF8` Nebula Cyan) — Vision & Acoustic Signal AI (`AIDD` @ `LabMACS`, `IntreccIAmi` LoRA Diffusion)
-     - `PHASE 03 · PRODUCTION RAG` (`#F59E0B` Solar Gold) — Hybrid RAG & Scalable Systems (`FastAPI`, `LangChain`, `MongoDB`, `TypeScript`)
-   - **2-Column Editorial Matrix**:
-     - Left column: **Selected Engineering Projects** with stack badges.
-     - Right column: **Curated Articles on AI · ML · DL** (Featured *Medium: AI Periodic Table* card + auto-synced `Date | Post` RSS table + `SQOIN` & `Omdena` experience highlights).
-   - **My Tech Stack Strip**: Official vector logos matching `hassenbenchaaben.me` (`Python`, `PyTorch`, `TensorFlow`, `FastAPI`, `LangChain & RAG`, `n8n`, `Next.js`, `React & TypeScript`, `Tailwind CSS`, `Docker`, `PostgreSQL & MongoDB`).
+## 1. Visual Identity & Copy Rules (`v4`)
+1. **Exact Bio & Role Positioning (No `Researcher`, No `LabMACS`)**:
+   - **Title & Bio**: *"Hi, I'm Hassen Ben Chaaben. I am a Master's student and Junior AI Engineer focused on building AI agents and scalable automation solutions. My expertise lies in Natural Language Processing, Computer Vision, and Generative AI."*
+   - **Sidebar Metadata**: Cleanly lists `Italy`, `https://www.hassenbenchaaben.me/`, `in/hassen-ben-chaaben`, and `@hassen.benchaaben01` (with `UNIVPM · LabMACS Research` and all `LabMACS` mentions completely removed).
+2. **Unified `hassenbenchaaben.me` Color Palette**:
+   - **Name Styling (`Hassen Ben Chaaben`)**: Solid signature portfolio electric lavender (`#CBACF9`) with a clean, subtle lavender glow (`text-shadow: 0 0 14px rgba(203, 172, 249, 0.45)`) next to crisp white (`#FFFFFF`) — replacing the clashing rainbow/orange gradient.
+   - **Body & Card Palette**: Deep-space obsidian (`#000319`), bento card navy (`#04071D`), soft slate-lavender body text (`#BEC1DD`), primary lavender accent (`#CBACF9`), and secondary sky-cyan accent (`#38BDF8`).
+   - **Tech Stack Pills**: Styled identically to `hassenbenchaaben.me` (`bg-purple-900/20 border-purple-500/30 text-[#CBACF9]`).
+3. **Full Untruncated Medium Vector Logo**:
+   - Uses the complete 3-ellipse Medium vector path (`viewBox="0 0 24 24"`, `M13.54 12a6.8...`) in the sidebar, hero action pill, and featured publication card so the logo never clips or truncates.
+4. **Cinematic Custom Assets**:
+   - **Hero Panorama**: [cosmic-solar-nebula-hero.jpg](file:///C:/Users/user/.gemini/antigravity/scratch/HassenChaaben/assets/cosmic-solar-nebula-hero.jpg) with animated SVG shooting meteors, orbital trajectory arcs, and twinkling constellation nodes.
+   - **Brand Emblem**: [hbc-orbital-logo.jpg](file:///C:/Users/user/.gemini/antigravity/scratch/HassenChaaben/assets/hbc-orbital-logo.jpg) embedded in header, avatar badge, hero banner pill, and portfolio button.
+5. **Hamel × Simon × Raschka Editorial Matrix**:
+   - **What I'm Working On**: 3 Bento Cards (`PHASE 01 · AGENTIC AI` — Autonomous AI Agents, `PHASE 02 · GENERATIVE AI & CV` — Computer Vision & Deep Learning, `PHASE 03 · PRODUCTION NLP` — Hybrid RAG & Automation) + `SQOIN` & `Omdena` experience.
+   - **2-Column Section**: Left = **A Small Selection of Recent Projects** (`Microsoft Office Antigravity Copilot`, `MonAgent`, `Mini_Rag_Application`, `IntreccIAmi`); Right = **Explore My Curated Articles on AI · ML · DL** (*Medium: AI Periodic Table* featured card + auto-synced `Date | Post` RSS table + `My Work Experience`).
