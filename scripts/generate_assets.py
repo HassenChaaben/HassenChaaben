@@ -131,6 +131,7 @@ def generate_all() -> None:
 </svg>
 """
     (ASSETS / "hero-card.svg").write_text(hero_svg, encoding="utf-8")
+    (ASSETS / "hero-banner-v5.svg").write_text(hero_svg, encoding="utf-8")
 
     # 2. 3-Phase Cosmic Bento Cards SVG (bento-phases.svg — Wide Pills, Zero Overflow)
     bento_svg = """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 194" width="100%">

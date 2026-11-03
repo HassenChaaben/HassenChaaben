@@ -1,6 +1,6 @@
 <div align="center">
 <a href="https://www.hassenbenchaaben.me/">
-<img src="./assets/hero-card.svg" width="100%" alt="Hassen Ben Chaaben — Master's student at UNIVPM and Junior AI Engineer (Part-Time AI Specialist)" />
+<img src="./assets/hero-banner-v5.svg" width="100%" alt="Hassen Ben Chaaben — Master's student at UNIVPM and Junior AI Engineer (Part-Time AI Specialist)" />
 </a>
 <br />
 <p align="center">
