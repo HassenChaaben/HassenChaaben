@@ -1,320 +1,133 @@
 from __future__ import annotations
 
 import base64
-import io
 from pathlib import Path
-import numpy as np
-from PIL import Image, ImageFilter
 
 ROOT = Path(__file__).resolve().parents[1]
 ASSETS = ROOT / "assets"
 
 
-def _b64_data_uri(path: Path, mime: str = "image/jpeg") -> str:
+def _b64_data_uri(path: Path) -> str:
     raw = path.read_bytes()
     b64 = base64.b64encode(raw).decode("ascii")
-    return f"data:{mime};base64,{b64}"
-
-
-def _pil_to_data_uri(img: Image.Image, fmt: str = "PNG", quality: int = 92) -> str:
-    buf = io.BytesIO()
-    if fmt.upper() == "JPEG":
-        img.convert("RGB").save(buf, format="JPEG", quality=quality, optimize=True)
-        mime = "image/jpeg"
-    else:
-        img.save(buf, format="PNG", optimize=True)
-        mime = "image/png"
-    b64 = base64.b64encode(buf.getvalue()).decode("ascii")
-    return f"data:{mime};base64,{b64}"
-
-
-def _prepare_three_planet_layers() -> tuple[str, str, str, str]:
-    """
-    Extracts 4 photographic layers from Hassen's uploaded 3-planet image
-    (assets/three-planets-source.png):
-      1. Clean deep-space starfield background (with Google Lens icon & static planets removed)
-      2. MarsRGBA sprite (cx=304.6, cy=62.3, r=41.9 + warm orange corona)
-      3. Moon RGBA sprite (cx=549.7, cy=120.5, r=94.6 + silver-white lunar glow)
-      4. Earth RGBA horizon sprite (cx=306.5, cy=983.1, r=675.7 + cyan atmospheric limb)
-    """
-    src_path = ASSETS / "three-planets-source.png"
-    raw_img = Image.open(src_path).convert("RGB")
-    w, h = raw_img.size  # 650 x 368
-
-    # Crop 4px outer screenshot border and resize back to 650x368 cleanly
-    cropped = raw_img.crop((4, 4, w - 4, h - 4)).resize((w, h), Image.Resampling.LANCZOS)
-    arr = np.array(cropped, dtype=np.float32)
-
-    # Remove rounded white screenshot corner arcs at all 4 corners
-    for y in range(28):
-        for x in range(28):
-            if x + y < 24:
-                arr[y, x, :] = arr[24, 24, :]
-            if (w - 1 - x) + y < 24:
-                arr[y, w - 1 - x, :] = arr[24, w - 25, :]
-
-    # Clean out ONLY the circular Google Lens icon at (cx=36, cy=330, r=26)
-    # Sample the clean sky ring immediately surrounding the icon (r=27..34) so Earth's natural atmosphere is 100% untouched
-    yy, xx = np.mgrid[0:h, 0:w]
-    lens_dist = np.sqrt((xx - 36.0) ** 2 + (yy - 330.0) ** 2)
-    ring_mask = (lens_dist >= 27.0) & (lens_dist <= 35.0)
-    ring_median = np.median(arr[ring_mask], axis=0)
-    lens_alpha = np.clip((28.0 - lens_dist) / 5.0, 0.0, 1.0)[..., None]
-    arr = (1.0 - lens_alpha) * arr + lens_alpha * ring_median
-
-    # Save cleaned full reference image to assets/three-planets-hero.jpg
-    clean_full = Image.fromarray(np.clip(arr, 0, 255).astype(np.uint8))
-    clean_full.resize((960, 544), Image.Resampling.LANCZOS).save(
-        ASSETS / "three-planets-hero.jpg", format="JPEG", quality=93, optimize=True
-    )
-
-    yy, xx = np.mgrid[0:h, 0:w]
-
-    # 1. Extract Mars RGBA Sprite (box: x=228..382, y=0..140; center=(304.6, 62.3), r=41.9)
-    mars_cx, mars_cy, mars_r = 304.6, 62.3, 41.9
-    dist_mars = np.sqrt((xx - mars_cx) ** 2 + (yy - mars_cy) ** 2)
-    lum_mars = np.max(arr, axis=2) - 6.0
-    alpha_mars = np.where(
-        dist_mars <= mars_r + 0.8,
-        255.0,
-        np.clip((lum_mars / 38.0) * 255.0, 0.0, 255.0)
-        * np.clip(1.0 - (dist_mars - mars_r) / 30.0, 0.0, 1.0) ** 1.5,
-    )
-    mx0, my0, mx1, my1 = 228, 0, 382, 138
-    mars_rgba = np.zeros((my1 - my0, mx1 - mx0, 4), dtype=np.uint8)
-    mars_rgba[..., :3] = np.clip(arr[my0:my1, mx0:mx1, :], 0, 255).astype(np.uint8)
-    mars_rgba[..., 3] = np.clip(alpha_mars[my0:my1, mx0:mx1], 0, 255).astype(np.uint8)
-    mars_uri = _pil_to_data_uri(Image.fromarray(mars_rgba, mode="RGBA"), fmt="PNG")
-
-    # 2. Extract Moon RGBA Sprite (box: x=424..650, y=6..244; center=(549.7, 120.5), r=94.6)
-    moon_cx, moon_cy, moon_r = 549.7, 120.5, 94.6
-    dist_moon = np.sqrt((xx - moon_cx) ** 2 + (yy - moon_cy) ** 2)
-    lum_moon = np.max(arr, axis=2) - 5.0
-    alpha_moon = np.where(
-        dist_moon <= moon_r + 0.8,
-        255.0,
-        np.clip((lum_moon / 42.0) * 255.0, 0.0, 255.0)
-        * np.clip(1.0 - (dist_moon - moon_r) / 34.0, 0.0, 1.0) ** 1.5,
-    )
-    lx0, ly0, lx1, ly1 = 424, 6, 650, 244
-    moon_rgba = np.zeros((ly1 - ly0, lx1 - lx0, 4), dtype=np.uint8)
-    moon_rgba[..., :3] = np.clip(arr[ly0:ly1, lx0:lx1, :], 0, 255).astype(np.uint8)
-    moon_rgba[..., 3] = np.clip(alpha_moon[ly0:ly1, lx0:lx1], 0, 255).astype(np.uint8)
-    moon_uri = _pil_to_data_uri(Image.fromarray(moon_rgba, mode="RGBA"), fmt="PNG")
-
-    # 3. Extract Earth Horizon RGBA Sprite (box: x=0..650, y=200..368; center=(306.5, 983.1), r=675.7)
-    earth_cx, earth_cy, earth_r = 306.5, 983.1, 675.7
-    dist_earth = np.sqrt((xx - earth_cx) ** 2 + (yy - earth_cy) ** 2)
-    alpha_earth = np.where(
-        dist_earth <= earth_r + 2.0,
-        255.0,
-        255.0 * np.clip(1.0 - (dist_earth - (earth_r + 2.0)) / 58.0, 0.0, 1.0) ** 1.6,
-    )
-    ey0, ey1 = 200, h
-    earth_rgba = np.zeros((ey1 - ey0, w, 4), dtype=np.uint8)
-    earth_rgba[..., :3] = np.clip(arr[ey0:ey1, :, :], 0, 255).astype(np.uint8)
-    bottom_fade = np.clip((h - 1 - yy) / 26.0, 0.0, 1.0)
-    earth_rgba[..., 3] = np.clip(alpha_earth[ey0:ey1, :] * bottom_fade[ey0:ey1, :], 0, 255).astype(np.uint8)
-    earth_uri = _pil_to_data_uri(Image.fromarray(earth_rgba, mode="RGBA"), fmt="PNG")
-
-    # 4. Build Clean Deep-Space Starfield Background (remove static Mars, Moon & Earth so animated sprites leave zero ghost trail)
-    bg_arr = arr.copy()
-    dark_space = np.percentile(arr[20:180, 70:190, :], 30, axis=(0, 1))
-    for y in range(h):
-        for x in range(w):
-            if dist_mars[y, x] < mars_r + 36.0 or dist_moon[y, x] < moon_r + 40.0 or y > 195:
-                bg_arr[y, x, :] = dark_space
-
-    bg_img = Image.fromarray(np.clip(bg_arr, 0, 255).astype(np.uint8)).filter(
-        ImageFilter.GaussianBlur(radius=0.6)
-    )
-    bg_uri = _pil_to_data_uri(bg_img, fmt="JPEG", quality=90)
-    return bg_uri, mars_uri, moon_uri, earth_uri
+    return f"data:image/jpeg;base64,{b64}"
 
 
 def generate_all() -> None:
-    bg_uri, mars_uri, moon_uri, earth_uri = _prepare_three_planet_layers()
+    hero_uri = _b64_data_uri(ASSETS / "cosmic-solar-nebula-hero.jpg")
     logo_uri = _b64_data_uri(ASSETS / "hbc-orbital-logo.jpg")
 
-    # Coordinate scale from 650x368 photo to 960px wide SVG space panorama (scale S = 960/650 = 1.476923, y_offset = -22)
-    # Photo height scaled = 368 * 1.476923 = 543.5px. Placing y_offset = -115 puts:
-    # - Mars center at (450, 42) -> wait: let's place the 650x368 coordinate space inside a `<g transform="translate(0, -18) scale(1.476923)">`
-    # Wait: if y_offset = -18 and scale = 1.476923:
-    # - Mars (cy=62.3) is at y = -18 + 62.3 * 1.477 = 74px!
-    # - Moon (cy=120.5) is at y = -18 + 120.5 * 1.477 = 160px!
-    # - Earth horizon crest (y=260..325 in photo) is at y = -18 + 265 * 1.477 = 373px!
-    # Wait: if we want ALL 3 PLANETS (Mars, Moon, AND Earth's bright cyan horizon!) to sit cleanly in the upper 315px above "Hi, I'm Hassen Ben Chaaben" (which is at y=340):
-    # Let's check! In the 650x368 photo:
-    # - Mars is at y = 20..104
-    # - Moon is at y = 26..215
-    # - Earth is at y = 255..368
-    # If we shift Earth up by just 42px in the 650x368 space (or use scaleY = 0.92 / translate Earth to y=162 in 650-space), then:
-    # - Mars is at y = 68px (top-center)
-    # - Moon is at y = 148px (right)
-    # - Earth's bright glowing cyan/white horizon crest is at y = 245..315px — 100% visible right above "Hi, I'm Hassen Ben Chaaben" (at y=342)!
-
-    hero_svg = f"""<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 462" width="100%">
+    # 1. Hero Card SVG (Matches Superdesign v5: Cosmic Solar System Panorama + Crisp #CBACF9 Typography)
+    hero_svg = f"""<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 448" width="100%">
   <defs>
     <clipPath id="cardClip">
-      <rect x="0" y="0" width="960" height="462" rx="22" />
+      <rect x="0" y="0" width="960" height="448" rx="22" />
     </clipPath>
     <clipPath id="logoTopClip">
       <circle cx="718" cy="34" r="10" />
     </clipPath>
-    <radialGradient id="marsHaloGrad" cx="42%" cy="48%" r="52%">
-      <stop offset="0%" stop-color="#FB923C" stop-opacity="0.55" />
-      <stop offset="55%" stop-color="#EA580C" stop-opacity="0.22" />
-      <stop offset="100%" stop-color="#EA580C" stop-opacity="0" />
-    </radialGradient>
-    <radialGradient id="moonHaloGrad" cx="42%" cy="50%" r="54%">
-      <stop offset="0%" stop-color="#F8FAFC" stop-opacity="0.38" />
-      <stop offset="60%" stop-color="#94A3B8" stop-opacity="0.14" />
-      <stop offset="100%" stop-color="#94A3B8" stop-opacity="0" />
-    </radialGradient>
-    <radialGradient id="earthAtmoGrad" cx="50%" cy="18%" r="65%">
-      <stop offset="0%" stop-color="#38BDF8" stop-opacity="0.48" />
-      <stop offset="45%" stop-color="#0284C7" stop-opacity="0.18" />
-      <stop offset="100%" stop-color="#000319" stop-opacity="0" />
-    </radialGradient>
-    <linearGradient id="textPanelFade" x1="0%" y1="0%" x2="0%" y2="100%">
-      <stop offset="0%" stop-color="#000319" stop-opacity="0" />
-      <stop offset="62%" stop-color="#000319" stop-opacity="0.0" />
-      <stop offset="74%" stop-color="#000319" stop-opacity="0.72" />
-      <stop offset="84%" stop-color="#000319" stop-opacity="0.96" />
+    <linearGradient id="fadeOverlay" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#000319" stop-opacity="0.04" />
+      <stop offset="50%" stop-color="#000319" stop-opacity="0.45" />
+      <stop offset="80%" stop-color="#000319" stop-opacity="0.95" />
       <stop offset="100%" stop-color="#000319" stop-opacity="1" />
     </linearGradient>
     <linearGradient id="borderGrad" x1="0%" y1="0%" x2="100%" y2="100%">
       <stop offset="0%" stop-color="#CBACF9" stop-opacity="0.55" />
-      <stop offset="50%" stop-color="#38BDF8" stop-opacity="0.35" />
+      <stop offset="50%" stop-color="#38BDF8" stop-opacity="0.3" />
       <stop offset="100%" stop-color="#CBACF9" stop-opacity="0.55" />
     </linearGradient>
     <style>
       .font-sans {{ font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', Helvetica, Arial, sans-serif; }}
       .font-mono {{ font-family: 'JetBrains Mono', 'Fira Code', ui-monospace, SFMono-Regular, monospace; }}
-
-      /* Realistic 3-Planet Orbital and Rotational Physics */
-      @keyframes marsOrbit {{
-        0%   {{ transform: translate(0px, 0px) rotate(0deg) scale(1); }}
-        25%  {{ transform: translate(14px, -7px) rotate(2.2deg) scale(1.03); }}
-        50%  {{ transform: translate(24px, 3px) rotate(0deg) scale(1.05); }}
-        75%  {{ transform: translate(10px, 9px) rotate(-2.2deg) scale(1.02); }}
-        100% {{ transform: translate(0px, 0px) rotate(0deg) scale(1); }}
-      }}
-      @keyframes moonOrbit {{
-        0%   {{ transform: translate(0px, 0px) rotate(0deg) scale(1); }}
-        33%  {{ transform: translate(-18px, 8px) rotate(-1.8deg) scale(1.025); }}
-        66%  {{ transform: translate(-8px, -10px) rotate(1.6deg) scale(0.985); }}
-        100% {{ transform: translate(0px, 0px) rotate(0deg) scale(1); }}
-      }}
-      @keyframes earthOrbit {{
-        0%   {{ transform: translate(0px, 0px) rotate(0deg); }}
-        50%  {{ transform: translate(-12px, -6px) rotate(0.9deg); }}
-        100% {{ transform: translate(0px, 0px) rotate(0deg); }}
-      }}
-      @keyframes coronaPulse {{
-        0%, 100% {{ opacity: 0.65; }}
-        50%      {{ opacity: 1; }}
-      }}
       @keyframes orbitFlow {{
-        to {{ stroke-dashoffset: -96; }}
+        to {{ stroke-dashoffset: -80; }}
+      }}
+      @keyframes meteorOne {{
+        0% {{ transform: translate(0px, 0px); opacity: 0; }}
+        12% {{ opacity: 1; }}
+        38% {{ transform: translate(-170px, 82px); opacity: 0; }}
+        100% {{ transform: translate(-170px, 82px); opacity: 0; }}
+      }}
+      @keyframes meteorTwo {{
+        0% {{ transform: translate(0px, 0px); opacity: 0; }}
+        12% {{ opacity: 0.9; }}
+        40% {{ transform: translate(-150px, 72px); opacity: 0; }}
+        100% {{ transform: translate(-150px, 72px); opacity: 0; }}
       }}
       @keyframes twinkle {{
         0%, 100% {{ opacity: 0.25; }}
-        50%      {{ opacity: 1; }}
+        50% {{ opacity: 1; }}
       }}
-
-      #mars-planet {{
-        transform-box: fill-box;
-        transform-origin: center;
-        animation: marsOrbit 14s ease-in-out infinite;
-      }}
-      #moon-planet {{
-        transform-box: fill-box;
-        transform-origin: center;
-        animation: moonOrbit 18s ease-in-out infinite;
-      }}
-      #earth-planet {{
-        transform-box: fill-box;
-        transform-origin: 50% 85%;
-        animation: earthOrbit 22s ease-in-out infinite;
-      }}
-      .corona {{ animation: coronaPulse 4.5s ease-in-out infinite; }}
-      .orbit-arc {{ stroke-dasharray: 7 7; animation: orbitFlow 4.5s linear infinite; }}
+      .orbit-arc {{ stroke-dasharray: 6 6; animation: orbitFlow 3.5s linear infinite; }}
+      .m1 {{ animation: meteorOne 6.5s ease-out infinite; }}
+      .m2 {{ animation: meteorTwo 8.5s ease-out 3s infinite; }}
       .tw1 {{ animation: twinkle 3.2s ease-in-out infinite; }}
-      .tw2 {{ animation: twinkle 4.6s ease-in-out 1.5s infinite; }}
-      .tw3 {{ animation: twinkle 3.8s ease-in-out 0.8s infinite; }}
+      .tw2 {{ animation: twinkle 4.4s ease-in-out 1.4s infinite; }}
     </style>
   </defs>
 
   <g clip-path="url(#cardClip)">
-    <!-- Deep Space Base -->
-    <rect x="0" y="0" width="960" height="462" fill="#000319" />
+    <rect x="0" y="0" width="960" height="448" fill="#000319" />
+    <image href="{hero_uri}" x="0" y="0" width="960" height="320" preserveAspectRatio="xMidYMid slice" />
 
-    <!-- Scene Group Uniformly Scaled (1.476923x) so Mars and Moon remain 100% True Circles -->
-    <g transform="translate(0, -14) scale(1.476923)">
-      <!-- Layer 0: Clean Deep-Space Starfield from Uploaded Image -->
-      <image href="{bg_uri}" x="0" y="0" width="650" height="368" preserveAspectRatio="none" />
+    <!-- Animated Celestial & Orbital HUD Overlay -->
+    <g class="m1">
+      <line x1="790" y1="36" x2="845" y2="10" stroke="#38BDF8" stroke-width="2" stroke-linecap="round" />
+      <circle cx="790" cy="36" r="2.5" fill="#F8FAFC" />
+    </g>
+    <g class="m2">
+      <line x1="550" y1="54" x2="600" y2="28" stroke="#CBACF9" stroke-width="1.8" stroke-linecap="round" />
+      <circle cx="550" cy="54" r="2" fill="#F8FAFC" />
+    </g>
+    <path d="M 285 185 Q 480 95, 735 55" fill="none" stroke="#38BDF8" stroke-opacity="0.55" stroke-width="1.5" class="orbit-arc" />
+    <path d="M 315 205 Q 530 165, 695 190" fill="none" stroke="#CBACF9" stroke-opacity="0.65" stroke-width="1.5" class="orbit-arc" />
+    <circle cx="485" cy="138" r="3.5" fill="#CBACF9" class="tw1" />
+    <circle cx="585" cy="110" r="4" fill="#38BDF8" class="tw2" />
+    <circle cx="715" cy="72" r="3.5" fill="#CBACF9" class="tw1" />
 
-      <!-- Twinkling Deep-Space Stars -->
-      <circle cx="88" cy="48" r="1.1" fill="#FFFFFF" class="tw1" />
-      <circle cx="145" cy="96" r="1.3" fill="#38BDF8" class="tw2" />
-      <circle cx="192" cy="36" r="1.0" fill="#CBACF9" class="tw3" />
-      <circle cx="395" cy="118" r="1.2" fill="#FFFFFF" class="tw1" />
-      <circle cx="418" cy="44" r="1.1" fill="#CBACF9" class="tw2" />
+    <!-- Smooth Gradient Fade into Portfolio Copy Area -->
+    <rect x="0" y="0" width="960" height="330" fill="url(#fadeOverlay)" />
 
-      <!-- Subtle Animated Orbital Trajectory Arcs Connecting Earth -> Mars -> Moon -->
-      <path d="M 110 215 Q 245 105, 305 62 T 550 120" fill="none" stroke="#38BDF8" stroke-opacity="0.28" stroke-width="0.9" class="orbit-arc" />
-      <path d="M 190 225 Q 370 148, 550 120" fill="none" stroke="#CBACF9" stroke-opacity="0.32" stroke-width="0.9" class="orbit-arc" />
-
-      <!-- PLANET 1: MARS (Top-Center Glowing Orange Crescent Planet) -->
-      <g id="mars-planet">
-        <circle cx="304.6" cy="62.3" r="62" fill="url(#marsHaloGrad)" class="corona" />
-        <image href="{mars_uri}" x="228" y="0" width="154" height="138" />
-      </g>
-
-      <!-- PLANET 2: THE MOON (Right Cratered Lunar Crescent) -->
-      <g id="moon-planet">
-        <circle cx="549.7" cy="120.5" r="122" fill="url(#moonHaloGrad)" class="corona" />
-        <image href="{moon_uri}" x="424" y="6" width="226" height="238" />
-      </g>
-
-      <!-- PLANET 3: EARTH (Glowing Cyan/Blue Curved Horizon Limb) -->
-      <g id="earth-planet">
-        <ellipse cx="315" cy="212" rx="310" ry="65" fill="url(#earthAtmoGrad)" class="corona" />
-        <image href="{earth_uri}" x="0" y="124" width="650" height="168" />
-      </g>
+    <!-- Subtle Portfolio Grid on Lower Area -->
+    <g stroke="#CBACF9" stroke-opacity="0.045" stroke-width="1">
+      <line x1="0" y1="310" x2="960" y2="310" />
+      <line x1="0" y1="350" x2="960" y2="350" />
+      <line x1="0" y1="390" x2="960" y2="390" />
+      <line x1="0" y1="430" x2="960" y2="430" />
     </g>
 
-    <!-- Smooth Translucent Portfolio Overlay preserving Earth's Glowing Cyan Horizon at y=225..310 -->
-    <rect x="0" y="0" width="960" height="462" fill="url(#textPanelFade)" />
+    <!-- Top-Right Glassmorphic Brand Badge -->
+    <rect x="688" y="18" width="252" height="32" rx="16" fill="#000319" fill-opacity="0.84" stroke="#CBACF9" stroke-opacity="0.4" />
+    <image href="{logo_uri}" x="708" y="24" width="20" height="20" clip-path="url(#logoTopClip)" />
+    <text x="736" y="38" fill="#CBACF9" class="font-mono" font-size="10.5" font-weight="600" letter-spacing="1.5">WELCOME TO MY OWN WORLD</text>
 
-    <!-- Top-Left & Top-Right Glassmorphic Status Pills (Leaves Center 3-Planet Panorama 100% Unobstructed) -->
-    <rect x="24" y="18" width="304" height="28" rx="14" fill="#000319" fill-opacity="0.78" stroke="#CBACF9" stroke-opacity="0.45" />
-    <circle cx="42" cy="32" r="3.5" fill="#CBACF9" class="tw1" />
-    <text x="54" y="36" fill="#CBACF9" class="font-mono" font-size="10" font-weight="600" letter-spacing="1.6">WHERE CREATIVITY MEETS INNOVATION</text>
+    <!-- Status Pills Row -->
+    <rect x="36" y="248" width="304" height="26" rx="13" fill="#04071D" stroke="#CBACF9" stroke-opacity="0.48" />
+    <circle cx="52" cy="261" r="3.5" fill="#CBACF9" class="tw1" />
+    <text x="64" y="265" fill="#CBACF9" class="font-mono" font-size="10" font-weight="600" letter-spacing="1.6">WHERE CREATIVITY MEETS INNOVATION</text>
 
-    <rect x="688" y="18" width="248" height="28" rx="14" fill="#000319" fill-opacity="0.78" stroke="#CBACF9" stroke-opacity="0.42" />
-    <image href="{logo_uri}" x="708" y="22" width="20" height="20" clip-path="url(#logoTopClip)" />
-    <text x="735" y="36" fill="#CBACF9" class="font-mono" font-size="10" font-weight="600" letter-spacing="1.5">WELCOME TO MY OWN WORLD</text>
+    <rect x="350" y="248" width="286" height="26" rx="13" fill="#04071D" stroke="#FFFFFF" stroke-opacity="0.2" />
+    <text x="366" y="265" fill="#FFFFFF" class="font-mono" font-size="10" font-weight="600" letter-spacing="1.2">✦ BUILDING NEXT-GEN AUTONOMOUS SYSTEMS</text>
 
-    <!-- Main Hero Heading: Razor-Sharp White + Solid #CBACF9 Portfolio Lavender -->
-    <text x="36" y="340" class="font-sans" font-size="36" font-weight="800" fill="#FFFFFF">
+    <!-- Main Hero Heading: Razor-Sharp White + Solid #CBACF9 Portfolio Lavender (Zero Blur) -->
+    <text x="36" y="324" class="font-sans" font-size="36" font-weight="800" fill="#FFFFFF">
       Hi, I'm <tspan fill="#CBACF9">Hassen Ben Chaaben</tspan>
     </text>
 
     <!-- Bio Lines (Approved v5 Text) -->
-    <text x="36" y="376" class="font-sans" font-size="15" fill="#BEC1DD">
+    <text x="36" y="362" class="font-sans" font-size="15" fill="#BEC1DD">
       I am a <tspan fill="#FFFFFF" font-weight="600">Master's student at UNIVPM</tspan> and <tspan fill="#FFFFFF" font-weight="600">Junior AI Engineer</tspan> (currently working as a <tspan fill="#CBACF9" font-weight="600">Part-Time AI Specialist</tspan>)
     </text>
-    <text x="36" y="400" class="font-sans" font-size="15" fill="#BEC1DD">
+    <text x="36" y="386" class="font-sans" font-size="15" fill="#BEC1DD">
       focused on building <tspan fill="#CBACF9" font-weight="600">AI agents</tspan> and <tspan fill="#CBACF9" font-weight="600">scalable automation solutions</tspan>. My expertise lies in <tspan fill="#FFFFFF" font-weight="600">Natural Language Processing</tspan>,
     </text>
-    <text x="36" y="424" class="font-sans" font-size="15" fill="#BEC1DD">
+    <text x="36" y="410" class="font-sans" font-size="15" fill="#BEC1DD">
       <tspan fill="#FFFFFF" font-weight="600">Computer Vision</tspan>, and <tspan fill="#FFFFFF" font-weight="600">Generative AI</tspan>.
     </text>
   </g>
 
-  <rect x="0.75" y="0.75" width="958.5" height="460.5" rx="21.25" fill="none" stroke="url(#borderGrad)" stroke-width="1.5" />
+  <rect x="0.75" y="0.75" width="958.5" height="446.5" rx="21.25" fill="none" stroke="url(#borderGrad)" stroke-width="1.5" />
 </svg>
 """
     (ASSETS / "hero-card.svg").write_text(hero_svg, encoding="utf-8")
@@ -430,7 +243,7 @@ def generate_all() -> None:
 """
     (ASSETS / "experience-card.svg").write_text(exp_svg, encoding="utf-8")
 
-    # 4. Portfolio Projects 2x2 Bento Grid SVG (projects-bento.svg)
+    # 4. Portfolio Projects 2x2 Bento Grid SVG (projects-bento.svg — Eliminates Crushed HTML Table!)
     projects_svg = """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 296" width="100%">
   <defs>
     <linearGradient id="projGrad1" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -494,7 +307,7 @@ def generate_all() -> None:
 """
     (ASSETS / "projects-bento.svg").write_text(projects_svg, encoding="utf-8")
 
-    # 5. Cosmic Tech Stack & Arsenal SVG (tech-stack.svg)
+    # 5. Cosmic Tech Stack & Arsenal SVG (tech-stack.svg — Cohesive Portfolio Pill Card)
     tech_svg = """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 124" width="100%">
   <defs>
     <linearGradient id="techBg" x1="0%" y1="0%" x2="100%" y2="100%">
