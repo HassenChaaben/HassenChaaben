@@ -1,0 +1,60 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 296" width="100%">
+  <defs>
+    <linearGradient id="projGrad1" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0B102E" />
+      <stop offset="100%" stop-color="#04071D" />
+    </linearGradient>
+    <linearGradient id="projGrad2" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#07192E" />
+      <stop offset="100%" stop-color="#04071D" />
+    </linearGradient>
+    <style>
+      .font-sans { font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', Helvetica, Arial, sans-serif; }
+      .font-mono { font-family: 'JetBrains Mono', 'Fira Code', ui-monospace, SFMono-Regular, monospace; }
+    </style>
+  </defs>
+
+  <!-- Row 1, Col 1: Microsoft Office Antigravity Copilot -->
+  <g transform="translate(0, 0)">
+    <rect x="1" y="1" width="470" height="138" rx="16" fill="url(#projGrad1)" stroke="#CBACF9" stroke-opacity="0.38" stroke-width="1.2" />
+    <text x="22" y="30" fill="#CBACF9" class="font-mono" font-size="10.5" font-weight="600" letter-spacing="1.1">01 · AGENTIC OFFICE AUTOMATION</text>
+    <rect x="308" y="15" width="144" height="21" rx="6" fill="#CBACF9" fill-opacity="0.14" stroke="#CBACF9" stroke-opacity="0.32" />
+    <text x="319" y="29" fill="#CBACF9" class="font-mono" font-size="10" font-weight="600">Python · Gemini · JS</text>
+    <text x="22" y="60" fill="#FFFFFF" class="font-sans" font-size="17" font-weight="700">Microsoft Office Antigravity Copilot</text>
+    <text x="22" y="87" fill="#BEC1DD" class="font-sans" font-size="13">Autonomous AI Copilot integrating Gemini and the Antigravity</text>
+    <text x="22" y="108" fill="#BEC1DD" class="font-sans" font-size="13">agent harness directly into Word, Excel, PowerPoint &amp; Outlook.</text>
+  </g>
+
+  <!-- Row 1, Col 2: Autonomous AI Agent (MonAgent) -->
+  <g transform="translate(488, 0)">
+    <rect x="1" y="1" width="470" height="138" rx="16" fill="url(#projGrad2)" stroke="#38BDF8" stroke-opacity="0.38" stroke-width="1.2" />
+    <text x="22" y="30" fill="#38BDF8" class="font-mono" font-size="10.5" font-weight="600" letter-spacing="1.1">02 · AUTONOMOUS CODING AGENT</text>
+    <rect x="296" y="15" width="156" height="21" rx="6" fill="#38BDF8" fill-opacity="0.14" stroke="#38BDF8" stroke-opacity="0.32" />
+    <text x="307" y="29" fill="#38BDF8" class="font-mono" font-size="10" font-weight="600">FastAPI · React · Docker</text>
+    <text x="22" y="60" fill="#FFFFFF" class="font-sans" font-size="17" font-weight="700">Autonomous AI Agent (MonAgent)</text>
+    <text x="22" y="87" fill="#BEC1DD" class="font-sans" font-size="13">Autonomous coding agent translating user intent into executable</text>
+    <text x="22" y="108" fill="#BEC1DD" class="font-sans" font-size="13">code via a <tspan fill="#FFFFFF" font-weight="600">Think → Act → Observe</tspan> ReAct loop in Docker sandboxes.</text>
+  </g>
+
+  <!-- Row 2, Col 1: Retrieval Augmented Generation (RAG) -->
+  <g transform="translate(0, 154)">
+    <rect x="1" y="1" width="470" height="138" rx="16" fill="#04071D" stroke="#FFFFFF" stroke-opacity="0.16" stroke-width="1.2" />
+    <text x="22" y="30" fill="#10B981" class="font-mono" font-size="10.5" font-weight="600" letter-spacing="1.1">03 · HYBRID RETRIEVAL PIPELINE</text>
+    <rect x="284" y="15" width="168" height="21" rx="6" fill="#10B981" fill-opacity="0.14" stroke="#10B981" stroke-opacity="0.32" />
+    <text x="295" y="29" fill="#10B981" class="font-mono" font-size="10" font-weight="600">LangChain · FastAPI · Mongo</text>
+    <text x="22" y="60" fill="#FFFFFF" class="font-sans" font-size="17" font-weight="700">Retrieval Augmented Generation (RAG)</text>
+    <text x="22" y="87" fill="#BEC1DD" class="font-sans" font-size="13">Production-grade RAG system using FastAPI, Docker, MongoDB,</text>
+    <text x="22" y="108" fill="#BEC1DD" class="font-sans" font-size="13">and LangChain with hybrid search and context-aware prompts.</text>
+  </g>
+
+  <!-- Row 2, Col 2: IntreccIAmi — Low-Rank Diffusion -->
+  <g transform="translate(488, 154)">
+    <rect x="1" y="1" width="470" height="138" rx="16" fill="#04071D" stroke="#FFFFFF" stroke-opacity="0.16" stroke-width="1.2" />
+    <text x="22" y="30" fill="#CBACF9" class="font-mono" font-size="10.5" font-weight="600" letter-spacing="1.1">04 · GENERATIVE VISION &amp; LORA</text>
+    <rect x="302" y="15" width="150" height="21" rx="6" fill="#CBACF9" fill-opacity="0.14" stroke="#CBACF9" stroke-opacity="0.32" />
+    <text x="314" y="29" fill="#CBACF9" class="font-mono" font-size="10" font-weight="600">PyTorch · Diffusion · LoRA</text>
+    <text x="22" y="60" fill="#FFFFFF" class="font-sans" font-size="17" font-weight="700">IntreccIAmi — Low-Rank Diffusion</text>
+    <text x="22" y="87" fill="#BEC1DD" class="font-sans" font-size="13">Taming Diffusion Models with Low-Rank Adaptation (LoRA) for</text>
+    <text x="22" y="108" fill="#BEC1DD" class="font-sans" font-size="13">high-precision complex weave pattern synthesis at UNIVPM.</text>
+  </g>
+</svg>
