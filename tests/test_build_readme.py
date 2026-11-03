@@ -96,6 +96,17 @@ def test_hero_card_has_crisp_text_without_blur_filter():
     assert 'filter="url(#lavenderGlow)"' not in hero_svg
 
 
+def test_hero_card_has_three_independently_animated_planets():
+    assert (ROOT / "assets" / "three-planets-hero.jpg").exists()
+    hero_svg = (ROOT / "assets" / "hero-card.svg").read_text(encoding="utf-8")
+    assert 'id="earth-planet"' in hero_svg
+    assert 'id="mars-planet"' in hero_svg
+    assert 'id="moon-planet"' in hero_svg
+    assert "@keyframes earthOrbit" in hero_svg
+    assert "@keyframes marsOrbit" in hero_svg
+    assert "@keyframes moonOrbit" in hero_svg
+
+
 def test_bento_phase_pills_are_wide_enough_for_labels():
     bento_svg = (ROOT / "assets" / "bento-phases.svg").read_text(encoding="utf-8")
     root = ET.fromstring(bento_svg)
